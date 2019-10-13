@@ -1,0 +1,1 @@
+# linux-3.4.39-jianwei-samsung-s5p6818
