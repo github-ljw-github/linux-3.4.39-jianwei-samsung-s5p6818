@@ -82,7 +82,81 @@ static void icedcc_putc(int ch)
 
 #define putc(ch)	icedcc_putc(ch)
 #endif
+/*******************************************************/
+/* baudrate rest value */
+union br_rest {
+        unsigned short  slot;           /* udivslot */
+        unsigned char   value;          /* ufracval */
+};
 
+struct s5p_uart {
+        unsigned int    ulcon;
+        unsigned int    ucon;
+        unsigned int    ufcon;
+        unsigned int    umcon;
+        unsigned int    utrstat;
+        unsigned int    uerstat;
+        unsigned int    ufstat;
+        unsigned int    umstat;
+        unsigned char   utxh;
+        unsigned char   res1[3];
+        unsigned char   urxh;
+        unsigned char   res2[3];
+        unsigned int    ubrdiv;
+        union br_rest   rest;
+        unsigned char   res3[0xffd0];
+};
+#define RX_FIFO_COUNT_MASK      0xff
+#define RX_FIFO_FULL_MASK       (1 << 8)
+#define TX_FIFO_FULL_MASK       (1 << 24)
+#define S5P6818_UART0		(0xC00A1000)
+#define writeb(c,addr) *((unsigned char volatile *)(addr)) = (c)
+#define readl(addr) *((unsigned char volatile *)(addr))
+static int serial_err_check(const int dev_index, int op)
+{
+        struct s5p_uart *const uart = (unsigned long volatile *)S5P6818_UART0;
+        unsigned int mask;
+
+        /*
+         * UERSTAT
+         * Break Detect [3]
+         * Frame Err    [2] : receive operation
+         * Parity Err   [1] : receive operation
+         * Overrun Err  [0] : receive operation
+         */
+        if (op)
+                mask = 0x8;
+        else
+                mask = 0xf;
+
+        return readl(&uart->uerstat) & mask;
+}
+/*
+ * Output a single byte to the serial port.
+ */
+static void serial_putc_dev(const char c, const int dev_index)
+{
+        struct s5p_uart *const uart = (unsigned long volatile *)S5P6818_UART0;
+
+
+        /* wait for room in the tx FIFO */
+        while ((readl(&uart->ufstat) & TX_FIFO_FULL_MASK)) {
+                if (serial_err_check(dev_index, 1))
+                        return;
+        }
+
+        writeb(c, &uart->utxh);
+
+        /* If \n, also do \r */
+        if (c == '\n')
+        	writeb('\r', &uart->utxh);
+}
+
+
+#define putc(c) serial_putc_dev(c, 0)
+
+
+/*******************************************************/
 static void putstr(const char *ptr)
 {
 	char c;

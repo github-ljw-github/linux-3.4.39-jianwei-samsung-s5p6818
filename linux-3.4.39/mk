@@ -1,3 +1,5 @@
 
 #make ARCH=arm exynos4_defconfig
-make ARCH=arm CROSS_COMPILE=/home/samba/u-boot-2014.07-jianwei-samsung-s5p6818/tool/gcc/arm-eabi-4.8/bin/arm-eabi-
+unset LDFLAGS CCFLAGS
+make ARCH=arm CROSS_COMPILE=/mnt/6818/uboot/tool/gcc/arm-eabi-4.8/bin/arm-eabi- uImage
+
