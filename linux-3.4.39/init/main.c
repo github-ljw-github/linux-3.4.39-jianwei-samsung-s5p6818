@@ -466,7 +466,7 @@ asmlinkage void __init start_kernel(void)
 {
 	char * command_line;
 	extern const struct kernel_param __start___param[], __stop___param[];
-
+	early_print("Hello start_kernel.\n");
 	/*
 	 * Need to run as early as possible, to initialize the
 	 * lockdep hash:
