@@ -908,6 +908,10 @@ static struct machine_desc * __init setup_machine_tags(unsigned int nr)
 	if (mdesc->fixup)
 		mdesc->fixup(tags, &from, &meminfo);
 
+	if (mdesc->fixup)
+		early_print("call mdesc->fixup.\n");
+	else
+		early_print("no_call mdesc->fixup.\n");
 	if (tags->hdr.tag == ATAG_CORE) {
 		if (meminfo.nr_banks != 0)
 			squash_mem_tags(tags);
@@ -931,6 +935,7 @@ static int __init meminfo_cmp(const void *_a, const void *_b)
 void __init setup_arch(char **cmdline_p)
 {
 	struct machine_desc *mdesc;
+	early_print("Hello setup_arch.\n");
 
 	setup_processor();
 	mdesc = setup_machine_fdt(__atags_pointer);
@@ -938,7 +943,7 @@ void __init setup_arch(char **cmdline_p)
 		mdesc = setup_machine_tags(machine_arch_type);
 	machine_desc = mdesc;
 	machine_name = mdesc->name;
-
+	early_print("machine_name:%s\n",mdesc->name);
 #ifdef CONFIG_ZONE_DMA
 	if (mdesc->dma_zone_size) {
 		extern unsigned long arm_dma_zone_size;
@@ -948,6 +953,10 @@ void __init setup_arch(char **cmdline_p)
 	if (mdesc->restart_mode)
 		reboot_setup(&mdesc->restart_mode);
 
+	if (mdesc->restart_mode)
+		early_print("call mdesc->restart_mode.\n");
+	else
+		early_print("no_call mdesc->restart_mode.\n");
 	init_mm.start_code = (unsigned long) _text;
 	init_mm.end_code   = (unsigned long) _etext;
 	init_mm.end_data   = (unsigned long) _edata;

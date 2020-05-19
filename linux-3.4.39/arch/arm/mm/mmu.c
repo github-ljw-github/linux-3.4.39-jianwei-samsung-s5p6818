@@ -1069,11 +1069,13 @@ void __init arm_mm_memblock_reserve(void)
  * called function.  This means you can't use any function or debugging
  * method which may touch any device, otherwise the kernel _will_ crash.
  */
+extern void __init early_print(const char *str, ...);
 static void __init devicemaps_init(struct machine_desc *mdesc)
 {
 	struct map_desc map;
 	unsigned long addr;
 	void *vectors;
+	early_print("Hello devicemaps_init.\n");
 
 	/*
 	 * Allocate the vector page early.
@@ -1188,7 +1190,7 @@ static void __init map_lowmem(void)
 void __init paging_init(struct machine_desc *mdesc)
 {
 	void *zero_page;
-
+	early_print("Hello paging_init.\n");
 	memblock_set_current_limit(lowmem_limit);
 
 	build_mem_type_table();

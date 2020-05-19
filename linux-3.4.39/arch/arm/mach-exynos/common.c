@@ -97,16 +97,34 @@ static struct cpu_table cpu_ids[] __initdata = {
 		.name		= name_exynos5250,
 	},
 };
+#define PB_IO_MAP(_n_, _v_, _p_, _s_, _t_)      \
+        {                                                                               \
+                .virtual        = _v_,                                  \
+                .pfn            = __phys_to_pfn(_p_),   \
+                .length         = _s_,                                  \
+                .type           = _t_                                   \
+        },
+
 
 /* Initial IO mappings */
 
 static struct map_desc exynos_iodesc[] __initdata = {
-	{
-		.virtual	= (unsigned long)S5P_VA_CHIPID,
-		.pfn		= __phys_to_pfn(EXYNOS_PA_CHIPID),
-		.length		= SZ_4K,
-		.type		= MT_DEVICE,
-	},
+/*
+ *      Length must be aligned 1MB
+ *
+ *      Refer to mach/iomap.h
+ *
+ *      Physical : __PB_IO_MAP_ ## _n_ ## _PHYS
+ *      Virtual  : __PB_IO_MAP_ ## _n_ ## _VIRT
+ *
+ *      name    .virtual,       .pfn,           .length,        .type
+ */
+	PB_IO_MAP(      REGS,   0xF0000000,     0xC0000000,     0x00300000,     MT_DEVICE )             /* NOMAL IO, Reserved */
+	PB_IO_MAP(      CCI4,   0xF0300000,     0xE0000000,     0x00100000,     MT_DEVICE )             /* CCI-400 */
+	PB_IO_MAP(      SRAM,   0xF0400000,     0xFFF00000,     0x00100000,     MT_DEVICE )             /* SRAM */
+	PB_IO_MAP(      NAND,   0xF0500000,     0x2C000000,     0x00100000,     MT_DEVICE )             /* NAND  */
+	PB_IO_MAP(      IROM,   0xF0600000,     0x00000000,     0x00100000,     MT_DEVICE )             /* IROM  */
+
 };
 
 static struct map_desc exynos4_iodesc[] __initdata = {
@@ -290,14 +308,15 @@ void exynos5_restart(char mode, const char *cmd)
  *
  * register the standard cpu IO areas
  */
-
+extern void __init early_print(const char *str, ...);
 void __init exynos_init_io(struct map_desc *mach_desc, int size)
 {
 	/* initialize the io descriptors we need for initialization */
 	iotable_init(exynos_iodesc, ARRAY_SIZE(exynos_iodesc));
+	early_print("call map_io.\n");
 	if (mach_desc)
 		iotable_init(mach_desc, size);
-
+	
 	/* detect cpu id and rev. */
 	s5p_init_cpu(S5P_VA_CHIPID);
 

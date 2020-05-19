@@ -246,12 +246,50 @@ static struct platform_device *smdk4x12_devices[] __initdata = {
 	&s3c_device_wdt,
 	&samsung_device_keypad,
 };
+extern void __init early_print(const char *str, ...);
+struct meminfo;
+#include <asm/setup.h>
+#ifndef __CFG_MEM_H__
+#define __CFG_MEM_H__
+
+/*------------------------------------------------------------------------------
+ *       System memory map
+ */
+#define CFG_MEM_PHY_SYSTEM_BASE                 0x40000000      /* System, must be at an evne 2MB boundary (head.S) */
+#define CFG_MEM_PHY_SYSTEM_SIZE                 0x3F000000      /* 0x3F000000:Total 1GB 0x7F000000:Total 2GB */
+
+/*------------------------------------------------------------------------------
+ *   DMA zone, if not defined DAM default size is 2M
+ */
+#define CFG_MEM_PHY_DMAZONE_SIZE        0x01000000  /* 16 MB DMA zone */
+
+#endif /* __CFG_MEM_H__ */
+
+/*------------------------------------------------------------------------------
+ *      cpu initialize and io/memory map.
+ *      procedure: fixup -> map_io -> init_irq -> timer init -> init_machine
+ */
+static void __init cpu_fixup(struct tag *tags, char **cmdline, struct meminfo *mi)
+{
+        early_print("%s\n", __func__);
+        /*
+         * system momory  = system mem size + dma zone size
+         */
+    mi->nr_banks      = 1;
+        mi->bank[0].start = CFG_MEM_PHY_SYSTEM_BASE;
+#if !defined(CFG_MEM_PHY_DMAZONE_SIZE)
+        mi->bank[0].size  = CFG_MEM_PHY_SYSTEM_SIZE;
+#else
+    mi->bank[0].size  = CFG_MEM_PHY_SYSTEM_SIZE + CFG_MEM_PHY_DMAZONE_SIZE;
+#endif
+}
 
 static void __init smdk4x12_map_io(void)
 {
 	clk_xusbxti.rate = 24000000;
 
 	exynos_init_io(NULL, 0);
+	early_print("call map_io.\n");
 	s3c24xx_init_clocks(clk_xusbxti.rate);
 	s3c24xx_init_uarts(smdk4x12_uartcfgs, ARRAY_SIZE(smdk4x12_uartcfgs));
 }
@@ -286,6 +324,7 @@ static void __init smdk4x12_machine_init(void)
 
 MACHINE_START(SMDK4212, "SMDK4212")
 	/* Maintainer: Kukjin Kim <kgene.kim@samsung.com> */
+	.fixup		= cpu_fixup,
 	.atag_offset	= 0x100,
 	.init_irq	= exynos4_init_irq,
 	.map_io		= smdk4x12_map_io,
@@ -295,14 +334,3 @@ MACHINE_START(SMDK4212, "SMDK4212")
 	.restart	= exynos4_restart,
 MACHINE_END
 
-MACHINE_START(SMDK4412, "SMDK4412")
-	/* Maintainer: Kukjin Kim <kgene.kim@samsung.com> */
-	/* Maintainer: Changhwan Youn <chaos.youn@samsung.com> */
-	.atag_offset	= 0x100,
-	.init_irq	= exynos4_init_irq,
-	.map_io		= smdk4x12_map_io,
-	.handle_irq	= gic_handle_irq,
-	.init_machine	= smdk4x12_machine_init,
-	.timer		= &exynos4_timer,
-	.restart	= exynos4_restart,
-MACHINE_END
