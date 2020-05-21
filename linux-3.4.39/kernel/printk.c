@@ -754,7 +754,25 @@ static int have_callable_console(void)
  *
  * See the vsnprintf() documentation for format string extensions over C99.
  */
-
+#if 1
+extern void __init early_print(const char *str, ...);
+asmlinkage int printk(const char *fmt, ...)
+{
+        extern void printascii(const char *);
+         char buf[256];
+         va_list ap;
+	const char *str=fmt; 
+         va_start(ap, str);
+         vsnprintf(buf, sizeof(buf), str, ap);
+         va_end(ap);
+ 
+#ifdef CONFIG_DEBUG_LL
+          printascii(buf);
+#endif
+/*          printk("%s", buf);*/
+	return 0;
+}
+#else
 asmlinkage int printk(const char *fmt, ...)
 {
 	va_list args;
@@ -774,7 +792,7 @@ asmlinkage int printk(const char *fmt, ...)
 
 	return r;
 }
-
+#endif
 /* cpu currently holding logbuf_lock */
 static volatile unsigned int printk_cpu = UINT_MAX;
 

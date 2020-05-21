@@ -290,7 +290,7 @@ static void __init smdk4x12_map_io(void)
 
 	exynos_init_io(NULL, 0);
 	early_print("call map_io.\n");
-	s3c24xx_init_clocks(clk_xusbxti.rate);
+	/*s3c24xx_init_clocks(clk_xusbxti.rate);*/
 	s3c24xx_init_uarts(smdk4x12_uartcfgs, ARRAY_SIZE(smdk4x12_uartcfgs));
 }
 

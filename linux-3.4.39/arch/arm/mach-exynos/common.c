@@ -318,9 +318,10 @@ void __init exynos_init_io(struct map_desc *mach_desc, int size)
 		iotable_init(mach_desc, size);
 	
 	/* detect cpu id and rev. */
-	s5p_init_cpu(S5P_VA_CHIPID);
+	/*s5p_init_cpu(S5P_VA_CHIPID);*/
 
-	s3c_init_cpu(samsung_cpu_id, cpu_ids, ARRAY_SIZE(cpu_ids));
+	/*s3c_init_cpu(samsung_cpu_id, cpu_ids, ARRAY_SIZE(cpu_ids));*/
+	early_print("end of exynos_init_io.\n");
 }
 
 static void __init exynos4_map_io(void)

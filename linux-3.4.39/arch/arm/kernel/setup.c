@@ -977,16 +977,23 @@ void __init setup_arch(char **cmdline_p)
 
 	if (mdesc->restart)
 		arm_pm_restart = mdesc->restart;
+	if (mdesc->restart)
+		early_print("mdesc->restart set.\n");
+	else
+		early_print("mdesc->restart unset.\n");
 
 	unflatten_device_tree();
-
+	early_print("unflatten_device_tree\n");
 #ifdef CONFIG_SMP
 	if (is_smp())
 		smp_init_cpus();
 #endif
+	early_print("smp_init_cpus\n");
 	reserve_crashkernel();
+	early_print("reserve_crashkernel\n");
 
 	tcm_init();
+	early_print("tcm_init\n");
 
 #ifdef CONFIG_MULTI_IRQ_HANDLER
 	handle_arch_irq = mdesc->handle_irq;
@@ -1002,6 +1009,11 @@ void __init setup_arch(char **cmdline_p)
 
 	if (mdesc->init_early)
 		mdesc->init_early();
+	if (mdesc->init_early)
+		early_print("call mdesc->init_early.\n");
+	else
+		early_print("no call mdesc->init_early.\n");
+	early_print("end of %s.\n", __func__);
 }
 
 

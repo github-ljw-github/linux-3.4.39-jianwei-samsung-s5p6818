@@ -1149,6 +1149,7 @@ static void __init devicemaps_init(struct machine_desc *mdesc)
 	 */
 	local_flush_tlb_all();
 	flush_cache_all();
+	early_print("end of %s\n",__func__);
 }
 
 static void __init kmap_init(void)
@@ -1208,4 +1209,5 @@ void __init paging_init(struct machine_desc *mdesc)
 
 	empty_zero_page = virt_to_page(zero_page);
 	__flush_dcache_page(NULL, empty_zero_page);
+	early_print("end of paging_init.\n");
 }
