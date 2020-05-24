@@ -296,6 +296,7 @@ static void __init smdk4x12_map_io(void)
 
 static void __init smdk4x12_machine_init(void)
 {
+#if 0
 	s3c_i2c0_set_platdata(NULL);
 	i2c_register_board_info(0, smdk4x12_i2c_devs0,
 				ARRAY_SIZE(smdk4x12_i2c_devs0));
@@ -320,6 +321,7 @@ static void __init smdk4x12_machine_init(void)
 	s3c_sdhci3_set_platdata(&smdk4x12_hsmmc3_pdata);
 
 	platform_add_devices(smdk4x12_devices, ARRAY_SIZE(smdk4x12_devices));
+#endif
 }
 
 MACHINE_START(SMDK4212, "SMDK4212")

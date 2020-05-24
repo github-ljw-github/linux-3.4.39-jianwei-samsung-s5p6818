@@ -473,6 +473,7 @@ static void __init exynos4_timer_resources(void)
 
 static void __init exynos4_timer_init(void)
 {
+#if 0
 	if (soc_is_exynos4210())
 		mct_int_type = MCT_INT_SPI;
 	else
@@ -481,6 +482,7 @@ static void __init exynos4_timer_init(void)
 	exynos4_timer_resources();
 	exynos4_clocksource_init();
 	exynos4_clockevent_init();
+#endif
 }
 
 struct sys_timer exynos4_timer = {

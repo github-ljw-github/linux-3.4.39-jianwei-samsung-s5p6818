@@ -295,7 +295,7 @@ static struct map_desc exynos5_iodesc[] __initdata = {
 
 void exynos4_restart(char mode, const char *cmd)
 {
-	__raw_writel(0x1, S5P_SWRESET);
+/*	__raw_writel(0x1, S5P_SWRESET);*/
 }
 
 void exynos5_restart(char mode, const char *cmd)
@@ -536,7 +536,11 @@ static const struct of_device_id exynos4_dt_irq_match[] = {
 
 void __init exynos4_init_irq(void)
 {
-	int irq;
+
+
+
+
+/*	int irq;
 	unsigned int gic_bank_offset;
 
 	gic_bank_offset = soc_is_exynos4412() ? 0x4000 : 0x8000;
@@ -554,13 +558,13 @@ void __init exynos4_init_irq(void)
 				COMBINER_IRQ(irq, 0));
 		combiner_cascade_irq(irq, IRQ_SPI(irq));
 	}
-
+*/
 	/*
 	 * The parameters of s5p_init_irq() are for VIC init.
 	 * Theses parameters should be NULL and 0 because EXYNOS4
 	 * uses GIC instead of VIC.
 	 */
-	s5p_init_irq(NULL, 0);
+/*	s5p_init_irq(NULL, 0);*/
 }
 
 void __init exynos5_init_irq(void)

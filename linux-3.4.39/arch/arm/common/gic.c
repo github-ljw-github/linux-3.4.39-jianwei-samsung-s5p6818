@@ -270,6 +270,7 @@ static int gic_set_wake(struct irq_data *d, unsigned int on)
 
 asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 {
+#if 0
 	u32 irqstat, irqnr;
 	struct gic_chip_data *gic = &gic_data[0];
 	void __iomem *cpu_base = gic_data_cpu_base(gic);
@@ -292,6 +293,7 @@ asmlinkage void __exception_irq_entry gic_handle_irq(struct pt_regs *regs)
 		}
 		break;
 	} while (1);
+#endif
 }
 
 static void gic_handle_cascade_irq(unsigned int irq, struct irq_desc *desc)
