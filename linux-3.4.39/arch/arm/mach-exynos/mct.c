@@ -1323,6 +1323,7 @@ CFG_SYS_STATICBUS_CONFIG(    NAND ,  8,    0,   3,   9,    1,   3,   0,  1,  0, 
 /*
 #define pr_debug 	printk
 */
+#define pr_debug 	printk
 
 #define	TIMER_CLOCK_SOURCE_HZ	(10*1000000)	/* 1MHZ */
 #define	TIMER_CLOCK_EVENT_HZ	(10*1000000)	/* 1MHZ */
@@ -1469,13 +1470,16 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 	int tscl = 0, tmux = 5;
 	int vers = 1;//nxp_cpu_version();
 
+	pr_debug("%s\n", __func__);
 #if !defined(CONFIG_NXP_DFS_BCLK)
 	int smux = 0, pscl = 0;
 	ulong mout;
 	ulong thz, delt = (-1UL);
 
 	/* PCLK */
+	pr_debug("%s:pclk clk_get\n", __func__);
 	info->clk = clk_get(NULL, name);
+	pr_debug("%s:pclk clk_get_rate\n", __func__);
    	rate = clk_get_rate(info->clk);
    	for (smux = 0; 5 > smux; smux++) {
    		mout = rate/(1<<smux), pscl = mout/frequency;
@@ -1496,7 +1500,9 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 	/* CLKGEN */
 	if (vers && tout != frequency) {
 		sprintf(name, "%s.%d", DEV_NAME_TIMER, info->channel);
+		pr_debug("%s:clk_get\n", __func__);
 		clk  = clk_get(NULL, name);
+		pr_debug("%s:clk_round_rate\n", __func__);
 		rate = clk_round_rate(clk, frequency);
 		if (abs(frequency-tout) >= abs(frequency-rate)) {
 			tout = clk_set_rate(clk, rate);
@@ -1516,6 +1522,7 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 
 	pr_debug("%s (ch:%d, mux=%d, scl=%d, rate=%ld, %s)\n",
 		__func__, info->channel, tmux, tscl, tout, info->in_tclk?"TCLK":"PCLK");
+	pr_debug("%s end\n", __func__);
 }
 
 static void timer_source_suspend(struct clocksource *cs)
@@ -1575,6 +1582,7 @@ static int __init timer_source_init(int ch)
 	struct clocksource *cs = &tm_source_clk;
 	struct timer_info *info = tm_source_info();
 
+	pr_debug("%s\n", __func__);
 	info->channel = ch;
 	info->irqno = -1;
 	timer_clock_select(info, TIMER_CLOCK_SOURCE_HZ);
@@ -1601,6 +1609,7 @@ static int __init timer_source_init(int ch)
 	__timer_sys_scl_val = info->prescale;
 	__timer_sys_clk_clr = readl(TIMER_SYS_CLKGEN + CLKGEN_CLR);
 	printk("timer.%d: source, %9lu(HZ:%d), mult:%u\n", ch, info->rate, HZ, cs->mult);
+	pr_debug("%s done\n", __func__);
  	return 0;
 }
 
@@ -1741,6 +1750,7 @@ static void __init timer_initialize(void)
 	timer_source_init(CFG_TIMER_SYS_TICK_CH);
 	timer_event_init(CFG_TIMER_EVT_TICK_CH);
 
+	pr_debug("%s done\n", __func__);
 	return;
 }
 
