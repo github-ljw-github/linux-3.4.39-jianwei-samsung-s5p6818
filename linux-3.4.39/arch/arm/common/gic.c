@@ -87,7 +87,7 @@ struct irq_chip gic_arch_extn = {
 #endif
 
 static struct gic_chip_data gic_data[MAX_GIC_NR] __read_mostly;
-
+#undef CONFIG_GIC_NON_BANKED
 #ifdef CONFIG_GIC_NON_BANKED
 static void __iomem *gic_get_percpu_base(union gic_base *base)
 {
@@ -123,6 +123,7 @@ static inline void gic_set_base_accessor(struct gic_chip_data *data,
 static inline void __iomem *gic_dist_base(struct irq_data *d)
 {
 	struct gic_chip_data *gic_data = irq_data_get_irq_chip_data(d);
+	printk("gic_dist_base:before gic_data_dist_base\n");
 	return gic_data_dist_base(gic_data);
 }
 
@@ -158,7 +159,13 @@ static void gic_unmask_irq(struct irq_data *d)
 	raw_spin_lock(&irq_controller_lock);
 	if (gic_arch_extn.irq_unmask)
 		gic_arch_extn.irq_unmask(d);
+	printk("gic_unmask_irq:before gic_dist_base\n");
+	gic_dist_base(d);
+	printk("gic_unmask_irq:before gic_irq\n");
+	gic_irq(d);
+	printk("gic_unmask_irq:before writel_relaxed\n");
 	writel_relaxed(mask, gic_dist_base(d) + GIC_DIST_ENABLE_SET + (gic_irq(d) / 32) * 4);
+	printk("gic_unmask_irq:after writel_relaxed\n");
 	raw_spin_unlock(&irq_controller_lock);
 }
 
