@@ -1,5 +1,5 @@
 
 #make ARCH=arm exynos4_defconfig
 unset LDFLAGS CCFLAGS
-make ARCH=arm CROSS_COMPILE=/mnt/6818/uboot/tool/gcc/arm-eabi-4.8/bin/arm-eabi- uImage
+make ARCH=arm CROSS_COMPILE=/mnt/6818/uboot/tool/gcc/arm-eabi-4.8/bin/arm-eabi- uImage V=1
 

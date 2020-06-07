@@ -1370,11 +1370,30 @@ int __timer_sys_clk_clr = 0;
 #define	CLKGEN_ENB		(0x0)
 #define	CLKGEN_CLR		(0x4)
 
-
+#define IP_RESET_REGISTER_0 IO_ADDRESS(0xc0012000)
+#define IP_RESET_REGISTER_1 IO_ADDRESS(0xc0012004)
+#define IP_RESET_REGISTER_2 IO_ADDRESS(0xc0012008)
+unsigned in32(unsigned addr)
+{
+	return (*((volatile unsigned*)addr));
+}
+void out32(unsigned addr, unsigned data)
+{
+	(*((volatile unsigned*)addr)) = data;
+}
+void sr32(unsigned addr, unsigned start_bit, unsigned bit_num, unsigned data)
+{
+	unsigned mask = ~(((1<<bit_num) - 1)<<start_bit);
+	out32(addr, ((in32(addr))&mask) | (data<<start_bit));
+}
 static inline void timer_reset(int ch)
 {
 /*	if (!nxp_soc_peri_reset_status(RESET_ID_TIMER))
 		nxp_soc_peri_reset_set(RESET_ID_TIMER);*/
+	/*关闭复位状态*/
+	sr32(IP_RESET_REGISTER_1, 3, 2, 0x3);
+	sr32(IP_RESET_REGISTER_1, 3, 2, 0x3);
+	sr32(IP_RESET_REGISTER_1, 3, 2, 0x3);	
 }
 
 static inline void timer_clock(int ch, int mux, int scl)
@@ -1471,6 +1490,7 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 	int vers = 1;//nxp_cpu_version();
 
 	pr_debug("%s\n", __func__);
+#if 0
 #if !defined(CONFIG_NXP_DFS_BCLK)
 	int smux = 0, pscl = 0;
 	ulong mout;
@@ -1514,11 +1534,12 @@ static void timer_clock_select(struct timer_info *info, long frequency)
 			rate = clk_get_rate(info->clk);	/* PCLK */
 		}
 	}
-
+#endif
 	info->tmmux = tmux;
 	info->prescale = tscl;
 	info->tcount = tout/HZ;
 	info->rate = tout;
+	info->rate = 1000;
 
 	pr_debug("%s (ch:%d, mux=%d, scl=%d, rate=%ld, %s)\n",
 		__func__, info->channel, tmux, tscl, tout, info->in_tclk?"TCLK":"PCLK");
@@ -1749,7 +1770,7 @@ static void __init timer_initialize(void)
 
 	timer_source_init(CFG_TIMER_SYS_TICK_CH);
 	timer_event_init(CFG_TIMER_EVT_TICK_CH);
-
+	
 	pr_debug("%s done\n", __func__);
 	return;
 }
