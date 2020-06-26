@@ -1421,7 +1421,7 @@ static inline void timer_start(int ch, int irqon)
 {
 	volatile U32 val;
 	int on = irqon ? 1 : 0;
-
+//0xC0017000 + 0x44
 	val  = readl(TIMER_BASE + TIMER_STAT);
 	val &= ~(TINT_CS_MASK<<5 | 0x1 << TINT_CH(ch));
 	val |=  (0x1 << TINT_CS_CH(ch) | on << TINT_CH(ch));
@@ -1597,7 +1597,11 @@ static struct clocksource tm_source_clk = {
 	.suspend	= timer_source_suspend,
 	.resume		= timer_source_resume,
 };
-
+void delay(int i)
+{
+	volatile int j = i;
+	while(j--);
+}
 static int __init timer_source_init(int ch)
 {
 	struct clocksource *cs = &tm_source_clk;
@@ -1622,9 +1626,22 @@ static int __init timer_source_init(int ch)
 	info->tcount = -1UL;
 	timer_reset(ch);
 	timer_stop (ch, 0);
-	timer_clock(ch, info->tmmux, info->prescale);
-	timer_count(ch, info->tcount + 1);
+	//timer_clock(ch, info->tmmux, info->prescale);
+	//timer_count(ch, info->tcount + 1);
+	timer_count(ch, 1000 + 1);
 	timer_start(ch, 0);
+	
+	while(1)
+	{
+		static int i = 0;
+		printk("%d\n", i++);
+		delay(0xffffff);
+		printk("addr=%x, tcon:%x\n", TIMER_BASE + TIMER_TCON + (TIMER_CH_OFFS * ch),readl(TIMER_BASE + TIMER_TCON + (TIMER_CH_OFFS * ch)));		
+		printk("addr=%x, cntb:%x\n", TIMER_BASE + TIMER_CNTB + (TIMER_CH_OFFS * ch),readl(TIMER_BASE + TIMER_CNTB + (TIMER_CH_OFFS * ch)));		
+		printk("addr=%x, cmpb:%x\n", TIMER_BASE + TIMER_CMPB + (TIMER_CH_OFFS * ch),readl(TIMER_BASE + TIMER_CMPB + (TIMER_CH_OFFS * ch)));		
+		printk("addr=%x, cnto:%x\n", TIMER_BASE + TIMER_CNTO + (TIMER_CH_OFFS * ch),readl(TIMER_BASE + TIMER_CNTO + (TIMER_CH_OFFS * ch)));		
+		printk("addr=%x, tcount:%x\n", TIMER_BASE + TIMER_CNTB + (TIMER_CH_OFFS * ch),info->tcount + 1);		
+	}
 
 	__timer_sys_mux_val = info->tmmux;
 	__timer_sys_scl_val = info->prescale;
@@ -1767,7 +1784,8 @@ static int __init timer_event_init(int ch)
 static void __init timer_initialize(void)
 {
 	pr_debug("%s\n", __func__);
-
+timer_reset(0);
+timer_reset(1);
 	timer_source_init(CFG_TIMER_SYS_TICK_CH);
 	timer_event_init(CFG_TIMER_EVT_TICK_CH);
 	
